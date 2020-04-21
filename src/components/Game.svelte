@@ -1,5 +1,6 @@
 <script>
   import GameItem from "./GameItem.svelte";
+  import { onDestroy } from "svelte";
   let attempts = 0;
   let n = 32;
   $: gameArray = Array(n);
@@ -10,11 +11,11 @@
   const handleSelect = ({ detail }) => {
     if (n === 1) {
       alert("you win");
+      finishGame();
       return;
     }
     if (detail == activeIndex) {
       n = n - 1;
-      console.log(gameArray);
       return;
     }
 
@@ -27,6 +28,18 @@
     }, level);
     start = true;
   };
+
+  function finishGame() {
+    activeIndex = null;
+    n = 32;
+    attempts = 0;
+    start = false;
+    learInterval(activeInterval);
+  }
+
+  onDestroy(() => {
+    clearInterval(activeInterval);
+  });
 </script>
 
 <style>
@@ -65,6 +78,15 @@
     align-items: flex-start;
     flex-direction: column;
   }
+  button {
+    background-color: forestgreen;
+    outline: none;
+    color: aliceblue;
+    padding: 13px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
 </style>
 
 <main class="container">
@@ -77,12 +99,8 @@
     <div class="game-body">
       {#if !start}
         <div class="diff">
-          <label>Select difficulty</label>
+          <label>Select difficulty level</label>
           <br />
-          <label>
-            <input type="radio" value={1500} bind:group={level} />
-            Easy
-          </label>
           <label>
             <input type="radio" value={1000} bind:group={level} />
             Medium
@@ -91,7 +109,13 @@
             <input type="radio" value={500} bind:group={level} />
             Hard
           </label>
-          <button class="start-btn" on:click|once={startGame}>START</button>
+          <label>
+            <input type="radio" value={250} bind:group={level} />
+            Extream
+          </label>
+          <button class="start-btn" on:click|once={startGame}>
+            START GAME
+          </button>
         </div>
       {:else}
         {#each gameArray as _, i}
@@ -100,5 +124,13 @@
       {/if}
 
     </div>
+    {#if start}
+      <button
+        class="start-btn"
+        style="background-color: red;"
+        on:click={finishGame}>
+        Too hard
+      </button>
+    {/if}
   </div>
 </main>
